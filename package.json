@@ -1,0 +1,26 @@
+{
+  "name": "one-page-app",
+  "version": "1.2.0",
+  "description": "Simple framework for one-page front-end app",
+  "main": "op.app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/alexkogan/onepageapp.git"
+  },
+  "keywords": [
+    "js",
+    "vanilla",
+    "jquery",
+    "one-page",
+    "framework"
+  ],
+  "dependencies": {
+    "jquery" : ""
+  },
+  "author": "Alex Kogan",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/alexkogan/onepageapp#readme"
+}
