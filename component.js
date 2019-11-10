@@ -1,4 +1,6 @@
 import {dlog} from './op.app'
+import { _exists, parseString, _default } from "one-page-app/functions";
+import $ from 'jquery'
 
 /**
  * A simple frontend component, somewhat similar to React component.
