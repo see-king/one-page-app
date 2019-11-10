@@ -1,4 +1,4 @@
-// import { deepMerge, getErrorObject, isNull, _exists, isNothing, parseString, isObject, _default } from "./functions";
+// import { deepMerge, getErrorObject, isNull, _exists, isNothing, parseString, isObject, _default } from "one-page-app/functions";
 
 
 
@@ -27,6 +27,19 @@ export function _exists( val ){
     return typeof val !== "undefined";
 }
 
+/**
+ * Parses string by replacing %%key1%% in it with value of key1 from data object.
+ * @param {*} el 
+ * @param {*} data 
+ */
+export function parseString( el, data) {
+    if( el.replace ){
+        return el.replace(
+            /%%(\w*)%%/g ,
+            function(m,key){ return data.hasOwnProperty(key) ? data[key] : ""; }
+        );
+    }
+}
 
 
 export function isObject( val ){

@@ -113,7 +113,7 @@ export default class onePageApp extends Reactor {
         window.addEventListener('popstate', this.onPopStateChange.bind(this) )
 
         // go to current url        
-        this.goTo(location.pathname);
+        this.goTo(location.pathname, false);
 
     }
 
