@@ -63,6 +63,10 @@ export default class hComponent {
             for( let ind in items ){
                 const item = items[ind];
                 let itemHtml = $(el)[0].outerHTML;
+
+                // add item index to item
+                item["__INDEX"] = ind;
+
                 dlog("foreach appending item", item, $(itemHtml)[0].outerHTML );
                 itemHtml = parseString( itemHtml , item);
                 
@@ -79,43 +83,51 @@ export default class hComponent {
     }
 
     parseTpl(){
-        dlog("Parsing component tpl");
-        let html = $(this.tpl)[0].cloneNode(true);
 
-        // parse attributes
-        for( let attribute in this.rules.attributes){
-            const callback = this.rules.attributes[attribute];
-            $( `[${attribute}]`, html ).each( (ind, item) => {
-                dlog( "component parsing attr", attribute, html );
-                // call callback
-                $(item)[0].outerHTML = callback(item, attribute ) ;
-                // remove the attribute altogether
-                // $(item)[0].removeAttribute(attribute)
-            })
+        let html;
+        const tpl =  $(this.tpl)[0];
+        if( tpl ){
+
+            dlog("Parsing component tpl");
+            html = tpl.cloneNode(true);
+    
+            // parse attributes
+            for( let attribute in this.rules.attributes){
+                const callback = this.rules.attributes[attribute];
+                $( `[${attribute}]`, html ).each( (ind, item) => {
+                    dlog( "component parsing attr", attribute, html );
+                    // call callback
+                    $(item)[0].outerHTML = callback(item, attribute ) ;
+                    // remove the attribute altogether
+                    // $(item)[0].removeAttribute(attribute)
+                })
+            }
+    
+            dlog("after parsing attributes", html );
+    
+            // parse values
+            html = parseString(  $(html)[0].outerHTML , this.state );        
+    
+            html = $.parseHTML(html);
+    
+            // parse event attributes (it has to be done after the teplate text is finished and no changes will be done)
+            for( let eventName in this.rules.events){
+                dlog( "parsing event", eventName, "on", html )            
+                
+                const callback = this.rules.events[eventName];
+                $( `[${eventName}]`, html ).each( (ind, item) => {
+                    dlog( "component parsing attr", eventName, html );
+                    // call callback                
+                    callback(item, eventName )             
+                    // remove the attribute altogether
+                    $(item)[0].removeAttribute(eventName)
+                })
+            }
+    
+            dlog("after parsing events", html );
+        } else {
+            html = $(`<div>Could not find template selector  '${this.tpl}' in document</div>`);
         }
-
-        dlog("after parsing attributes", html );
-
-        // parse values
-        html = parseString(  $(html)[0].outerHTML , this.state );        
-
-        html = $.parseHTML(html);
-
-        // parse event attributes (it has to be done after the teplate text is finished and no changes will be done)
-        for( let eventName in this.rules.events){
-            dlog( "parsing event", eventName, "on", html )            
-            
-            const callback = this.rules.events[eventName];
-            $( `[${eventName}]`, html ).each( (ind, item) => {
-                dlog( "component parsing attr", eventName, html );
-                // call callback                
-                callback(item, eventName )             
-                // remove the attribute altogether
-                $(item)[0].removeAttribute(eventName)
-            })
-        }
-
-        dlog("after parsing events", html );
 
         return $(html);
     }

@@ -91,6 +91,7 @@ export default class onePageApp extends Reactor {
         this.target = el;
 
         this.currentRoute = null;
+        this.uri = null;
         this.router = new onePageRouter(this.params.routes, this.params.routerParams);
 
         this.init();
@@ -185,8 +186,11 @@ export default class onePageApp extends Reactor {
      * @param {*} pushState boolean, whether to push the new state or not
      */
     goTo(href, pushState ) {
+        
+        // store the uri
+        this.uri = href;
+        
         pushState = _default(pushState, true); //
-
 
         // push url to history to simulate actual URL change
         if( pushState ){
