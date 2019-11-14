@@ -1,5 +1,5 @@
 import {dlog} from './op.app'
-import { _exists, parseString, _default } from "one-page-app/functions";
+import { _exists, parseString, _default } from "./functions";
 import $ from 'jquery'
 
 /**
@@ -7,28 +7,61 @@ import $ from 'jquery'
  */
 export default class hComponent {
 
-    constructor( tpl, data ){
+    /**
+     * 
+     * @param {string|object} tpl selector or DOM element to copy and use as template.
+     * By default, variable placeholders in template are marked by variable name within double percents: %%varname%%
+     * you can use your own attribute handlers to populate template. Override/append hanlders with setAttributesHandlers() 
+     * @param {*} data data to populate template
+     * @param {*} params additional parameters. accepts: {array} eventList - list of additional events to handle.
+     */
+    constructor( tpl, data, params ){
         this.tpl = tpl;
         this.state = data;
         this._element = null;
 
+        
+        /**
+        * list of events to handle with this.event().
+        * The argument of "on{event}" attribute is the name of method to call.
+        * E.g. <button onclick="handleClick">Handle it</button> will call descendant's handleClick() method and pass the element to it
+        */
         this.eventList = ['click', 'Click', 'change', 'Change', 'input', 'Input', 'keyup', 'keydown', 'mousein', 'mouseout']
 
         this.rules = {
-            attributes:{
-                foreach: this.foreach.bind(this),        
-            },
+            /**
+             * List of attributes and callbacks to call when attribute is found
+             */
+            attributes:{}, 
+            
+            //  events :{}
+        }
 
-            events :{
+        params = _default( params, {} )
 
+        // default attributes handlers
+        this.setAttributesHandlers( 
+            { 
+                foreach: this.foreach.bind(this)
             }
+        )
+
+        // optional override of event list
+        if(params.eventList){
+            // merge two arrays and remove duplicates
+            this.eventList = Array.from( new Set( this.eventList.concat(params.eventList) ) );
+            dlog("merged ", params.eventList, ", recieved ", this.eventList )
         }
 
-        // send all events to this.event()
-        for( let i in this.eventList ){            
-            this.rules.events[ this.eventList[i] ] = this.event.bind(this)
-        }
-        dlog("events added", this.rules.events);
+    }
+
+    /**
+     * Set/override attribute handlers.
+     * Call it in descendants after super() call to append/override attribute handlers
+     * @param {object} handlers  object of { attibute_name : callback, ... }
+     */
+    setAttributesHandlers( handlers ){
+        this.rules.attributes = Object.assign(this.rules.attributes, handlers );
     }
 
     setState( data, doRender = false ){
@@ -76,6 +109,7 @@ export default class hComponent {
                 dlog("foreach increment html", html );
             }            
         }
+        
 
         dlog( "foreach result", html );
         // (el).append( $(html) );
@@ -96,10 +130,10 @@ export default class hComponent {
                 const callback = this.rules.attributes[attribute];
                 $( `[${attribute}]`, html ).each( (ind, item) => {
                     dlog( "component parsing attr", attribute, html );
+                    
                     // call callback
                     $(item)[0].outerHTML = callback(item, attribute ) ;
-                    // remove the attribute altogether
-                    // $(item)[0].removeAttribute(attribute)
+                    
                 })
             }
     
@@ -110,15 +144,15 @@ export default class hComponent {
     
             html = $.parseHTML(html);
     
-            // parse event attributes (it has to be done after the teplate text is finished and no changes will be done)
-            for( let eventName in this.rules.events){
-                dlog( "parsing event", eventName, "on", html )            
-                
-                const callback = this.rules.events[eventName];
+            // parse event attributes (it has to be done after the template text is finished and no more changes will be done)            
+            for( let eventName of this.eventList ){
+                dlog( "parsing event", eventName, "on", html )                                            
                 $( `[${eventName}]`, html ).each( (ind, item) => {
-                    dlog( "component parsing attr", eventName, html );
-                    // call callback                
-                    callback(item, eventName )             
+                    dlog( "component parsing attr", eventName, html );                                        
+                    
+                    // handle the event
+                    this.event(item, eventName )             
+
                     // remove the attribute altogether
                     $(item)[0].removeAttribute(eventName)
                 })
